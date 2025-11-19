@@ -1,0 +1,25 @@
+<template>
+  <div class="flex h-full flex-col items-center justify-center">
+    <div class="flex h-32 w-32 items-center justify-center px-2 py-2">
+      <image class="h-auto w-24" src="{{ src }}"></image>
+    </div>
+    <text class="my-6 text-center text-5xl font-bold text-brand">
+      {{ title }}
+    </text>
+    <text class="text-center text-2xl text-custom-grey">{{ desc }}</text>
+  </div>
+</template>
+
+<script>
+  export default {
+    data: {
+      title: 'TailwindCSS',
+      src: '',
+      desc: '大幅提升应用开发速度',
+    },
+  }
+</script>
+
+<style>
+  @tailwind utilities;
+</style>

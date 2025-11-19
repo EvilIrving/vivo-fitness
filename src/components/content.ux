@@ -1,0 +1,41 @@
+<template>
+  <block>
+    <div class="flex flex-row items-center rounded-4xl bg-custom-white px-5 py-5">
+      <div class="mr-3 flex h-28 w-28 items-center justify-center rounded-full">
+        <image class="h-auto w-20" src="{{parmas.src}}"></image>
+      </div>
+      <div class="flex w-[192px] flex-col items-start" style="width: 192px">
+        <text class="text-4xl text-black">{{ parmas.title }}</text>
+        <text class="mt-1 text-2xl text-custom-grey">{{ parmas.desc }}</text>
+      </div>
+      <div class="flex items-center justify-center" style="height: 92px">
+        <image class="h-16 w-12" src="./../assets/images/setting.png"></image>
+      </div>
+    </div>
+    <div
+      class="mr-6 flex h-36 w-36 items-center justify-center rounded-4xl bg-custom-white"
+      slot="right"
+      @click="onDeleteClick(idx)">
+      <image class="h-16 w-16" src="./../assets/images/delete.png"></image>
+    </div>
+  </block>
+</template>
+
+<script>
+  export default {
+    props: {
+      parmas: {},
+      idx: 0,
+    },
+
+    onInit() {},
+
+    onDeleteClick(idx) {
+      this.$emit('delete', idx)
+    },
+  }
+</script>
+
+<style>
+  @tailwind utilities;
+</style>
