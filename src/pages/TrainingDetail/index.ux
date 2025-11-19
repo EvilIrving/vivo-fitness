@@ -1,0 +1,118 @@
+<template>
+  <div class="flex h-full flex-col bg-gray-50">
+    <!-- 标题栏 -->
+    <div class="flex items-center justify-between bg-white px-4 py-6 shadow-sm">
+      <div class="flex h-12 w-12 items-center justify-center" @click="goBack">
+        <text class="text-3xl text-gray-600">‹</text>
+      </div>
+      <text class="text-3xl font-bold text-gray-800">训练详情</text>
+      <div class="w-12"></div>
+    </div>
+
+    <!-- 加载中 -->
+    <div class="flex flex-1 items-center justify-center" if="{{ loading }}">
+      <text class="text-2xl text-gray-400">加载中...</text>
+    </div>
+
+    <!-- 详情内容 -->
+    <div class="flex-1" if="{{ !loading && record }}">
+      <!-- 动作信息卡片 -->
+      <div class="mx-4 mt-4 rounded-lg bg-white p-4 shadow-sm">
+        <text class="text-3xl font-bold text-gray-800">{{ record.actionName }}</text>
+        <text class="mt-2 text-xl text-gray-500">{{ record.date }}</text>
+        
+        <div class="mt-4 flex justify-around border-t border-gray-100 pt-4">
+          <div class="flex flex-col items-center">
+            <text class="text-4xl font-bold text-brand">{{ record.totalReps }}</text>
+            <text class="mt-1 text-xl text-gray-500">总次数</text>
+          </div>
+          <div class="flex flex-col items-center">
+            <text class="text-4xl font-bold text-brand">{{ record.sets.length }}</text>
+            <text class="mt-1 text-xl text-gray-500">组数</text>
+          </div>
+        </div>
+      </div>
+
+      <!-- 组次详情列表 -->
+      <div class="mx-4 mt-4">
+        <text class="text-2xl font-bold text-gray-800">组次详情</text>
+      </div>
+
+      <list class="mt-2 flex-1" scrollbar="true">
+        <list-item
+          class="mx-4 my-2 flex flex-col rounded-lg bg-white p-4"
+          type="list-item"
+          for="{{ record.sets }}">
+          <div class="flex items-center justify-between">
+            <text class="text-2xl font-bold text-gray-700">第 {{ $item.setNumber }} 组</text>
+            <text class="text-3xl font-bold text-brand">{{ $item.actualReps }} / {{ $item.targetReps }}</text>
+          </div>
+          <div class="mt-2 flex items-center justify-between text-xl text-gray-400">
+            <text>{{ formatTime($item.startTime) }}</text>
+            <text>{{ $item.setDuration }}秒</text>
+          </div>
+        </list-item>
+      </list>
+    </div>
+
+    <!-- 找不到记录 -->
+    <div class="flex flex-1 flex-col items-center justify-center" if="{{ !loading && !record }}">
+      <text class="text-6xl">❌</text>
+      <text class="mt-4 text-2xl text-gray-400">找不到训练记录</text>
+      <div class="mt-8 rounded-full bg-gray-300 px-8 py-4" @click="goBack">
+        <text class="text-2xl text-white">返回</text>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+  import { getAllRecords } from '../../helper/storageService.js'
+
+  export default {
+    data: {
+      recordId: '',
+      record: null,
+      loading: true,
+    },
+
+    async onInit() {
+      this.recordId = this.recordId || ''
+      console.log('训练详情页初始化:', this.recordId)
+      
+      await this.loadRecord()
+    },
+
+    async loadRecord() {
+      try {
+        const records = await getAllRecords()
+        this.record = records.find(r => r.recordId === this.recordId)
+        
+        if (this.record) {
+          console.log('找到记录:', this.record)
+        } else {
+          console.log('未找到记录:', this.recordId)
+        }
+      } catch (e) {
+        console.error('加载记录失败:', e)
+      } finally {
+        this.loading = false
+      }
+    },
+
+    formatTime(timestamp) {
+      const date = new Date(timestamp)
+      const hours = String(date.getHours()).padStart(2, '0')
+      const minutes = String(date.getMinutes()).padStart(2, '0')
+      return `${hours}:${minutes}`
+    },
+
+    goBack() {
+      global.router.back()
+    },
+  }
+</script>
+
+<style>
+  @tailwind utilities;
+</style>

@@ -1,0 +1,201 @@
+<template>
+  <div class="flex h-full flex-col items-center justify-center bg-gradient-to-b from-blue-50 to-white">
+    <!-- 动作名称 -->
+    <text class="text-3xl font-bold text-gray-700">{{ actionName }}</text>
+    
+    <!-- 当前组数 -->
+    <text class="mt-2 text-xl text-gray-500">第 {{ currentSet }} 组</text>
+    
+    <!-- 当前计数 (超大显示) -->
+    <div class="mt-12 flex flex-col items-center">
+      <text class="text-9xl font-bold" style="color: {{ countColor }}">{{ currentCount }}</text>
+      <text class="mt-2 text-3xl text-gray-400">/ {{ targetReps }}</text>
+    </div>
+    
+    <!-- 进度条 -->
+    <div class="mt-8 h-3 w-4/5 overflow-hidden rounded-full bg-gray-200">
+      <div class="h-full bg-brand transition-all" style="width: {{ progress }}%"></div>
+    </div>
+    
+    <!-- 状态提示 -->
+    <text class="mt-6 text-2xl text-gray-500">{{ statusText }}</text>
+    
+    <!-- 操作按钮 -->
+    <div class="mt-12 flex space-x-4">
+      <div class="rounded-full bg-gray-300 px-8 py-4" @click="pauseTraining" if="{{ isTraining }}">
+        <text class="text-2xl text-white">暂停</text>
+      </div>
+      
+      <div class="rounded-full bg-red-500 px-8 py-4" @click="stopTraining">
+        <text class="text-2xl text-white">结束</text>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+  import sensorService from '../../helper/sensorService.js'
+  import recognitionAlgorithm from '../../helper/recognitionAlgorithm.js'
+  import { saveCurrentSession } from '../../helper/storageService.js'
+
+  export default {
+    data: {
+      actionCode: '',
+      actionName: '',
+      targetReps: 12,
+      currentCount: 0,
+      currentSet: 1,
+      isTraining: true,
+      statusText: '准备中...',
+      countColor: '#3B82F6',
+      progress: 0,
+      startTime: 0,
+    },
+
+    onInit() {
+      this.actionCode = this.actionCode || ''
+      this.actionName = this.actionName || '训练'
+      this.targetReps = parseInt(this.targetReps) || 12
+      this.startTime = Date.now()
+      
+      console.log('训练页面初始化:', {
+        actionCode: this.actionCode,
+        actionName: this.actionName,
+        targetReps: this.targetReps,
+      })
+      
+      // 延迟启动训练(给用户准备时间)
+      setTimeout(() => {
+        this._startSensorMonitoring()
+      }, 1000)
+    },
+
+    onDestroy() {
+      // 页面销毁时停止传感器
+      sensorService.stop()
+      console.log('训练页面销毁,传感器已停止')
+    },
+
+    _startSensorMonitoring() {
+      // 初始化识别算法
+      const success = recognitionAlgorithm.init(this.actionCode, (data) => {
+        this._onActionDetected(data)
+      })
+      
+      if (!success) {
+        this.statusText = '识别器初始化失败'
+        return
+      }
+      
+      // 启动传感器监听
+      sensorService.start(
+        (fusedData) => {
+          // 将数据传给识别算法
+          recognitionAlgorithm.process(fusedData)
+        },
+        (error) => {
+          console.error('传感器错误:', error)
+          this.statusText = error.message
+          this.isTraining = false
+        }
+      )
+      
+      this.statusText = '正在监听动作...'
+      this.isTraining = true
+    },
+
+    _onActionDetected(data) {
+      console.log('检测到动作完成!', data)
+      
+      // 计数+1
+      this.currentCount++
+      
+      // 更新进度
+      this.progress = Math.min((this.currentCount / this.targetReps) * 100, 100)
+      
+      // 更新颜色
+      if (this.progress >= 80) {
+        this.countColor = '#F59E0B' // 橙色(接近完成)
+      } else {
+        this.countColor = '#3B82F6' // 蓝色
+      }
+      
+      // 震动反馈
+      global.vibrator.vibrate({ mode: 'short' })
+      
+      // 检查是否完成目标
+      if (this.currentCount >= this.targetReps) {
+        this._onSetComplete()
+      }
+    },
+
+    _onSetComplete() {
+      console.log('组完成!')
+      
+      this.statusText = '目标完成!'
+      this.countColor = '#10B981' // 绿色
+      this.isTraining = false
+      
+      // 长震动反馈
+      global.vibrator.vibrate({ mode: 'long' })
+      
+      // 停止传感器
+      sensorService.stop()
+      
+      // 保存当前会话数据
+      const sessionData = {
+        actionCode: this.actionCode,
+        actionName: this.actionName,
+        currentSet: this.currentSet,
+        targetReps: this.targetReps,
+        actualReps: this.currentCount,
+        startTime: this.startTime,
+        endTime: Date.now(),
+      }
+      
+      saveCurrentSession(sessionData)
+      
+      // 延迟跳转到完成页面
+      setTimeout(() => {
+        global.router.replace({
+          uri: '/pages/SetComplete',
+          params: {
+            actionCode: this.actionCode,
+            actionName: this.actionName,
+            actualReps: String(this.currentCount),
+            targetReps: String(this.targetReps),
+            currentSet: String(this.currentSet),
+          },
+        })
+      }, 1500)
+    },
+
+    pauseTraining() {
+      if (this.isTraining) {
+        sensorService.stop()
+        this.isTraining = false
+        this.statusText = '已暂停'
+        global.prompt.showToast({ message: '训练已暂停' })
+      } else {
+        this._startSensorMonitoring()
+        this.isTraining = true
+        global.prompt.showToast({ message: '继续训练' })
+      }
+    },
+
+    stopTraining() {
+      sensorService.stop()
+      this.isTraining = false
+      
+      global.prompt.showToast({ message: '训练已结束' })
+      
+      setTimeout(() => {
+        global.router.back()
+      }, 500)
+    },
+  }
+</script>
+
+<style>
+  @tailwind utilities;
+</style>

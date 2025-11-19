@@ -1,4 +1,72 @@
-# 应用示例模版 | Tailwind CSS
+# 健身计数助手
+
+基于 vivo Watch 5 (BlueOS) 的健身动作自动计数应用
+
+## 功能特点
+
+- 🏋️ 5种预设动作自动识别
+- 📊 实时计数显示
+- 📳 震动反馈
+- 💾 训练数据本地保存
+- 📈 历史记录查询
+
+## 已完成功能
+
+### 页面 (7个)
+1. ActionList - 动作列表页
+2. RepsSetting - 次数设定页  
+3. TrainingReady - 训练准备页
+4. TrainingActive - 训练进行页
+5. SetComplete - 组完成页
+6. TrainingHistory - 历史记录页
+7. TrainingDetail - 训练详情页
+
+### 核心模块 (5个)
+1. constants.js - 常量定义
+2. actionConfig.js - 动作配置
+3. storageService.js - 存储服务
+4. sensorService.js - 传感器服务
+5. recognitionAlgorithm.js - 识别算法
+
+### 组件 (5个)
+1. action-card - 动作卡片
+2. counter-display - 计数显示
+3. progress-ring - 进度环
+4. set-summary - 组次摘要
+5. training-record-item - 记录列表项
+
+## 快速开始
+
+```bash
+# 安装依赖
+pnpm install
+
+# 启动 Tailwind CSS 构建
+pnpm tailwindcss
+
+# 代码检查
+pnpm lint
+
+# 代码格式化  
+pnpm prettier
+```
+
+## 支持的动作
+
+1. 杠铃卧推 (ACT_001)
+2. 器械夹胸 (ACT_002)  
+3. 哑铃弯举 (ACT_003)
+4. 坐姿推肩 (ACT_004)
+5. 腿举 (ACT_005)
+
+## 技术栈
+
+- BlueOS (vivo Watch 5)
+- Tailwind CSS
+- TypeScript (类型声明)
+- 传感器: 加速度计 + 陀螺仪
+
+## 项目结构
 
 ## 文件结构
 
@@ -20,10 +88,10 @@
 │   └── manifest.json   # 配置 BlueOS 应用基本信息；
 └── .eslintrc           # Eslint 配置文件；
 └── .prettierrc         # prettier 配置文件；
-└── tailwind.config.js  # Tailwind CSS 自定义配置文件；
+└── tailwind.config.cjs  # Tailwind CSS 自定义配置文件；
 └── tsconfig.json       # 为 JavaScript 语言服务提供配置选项；
 └── build.config.js     # BlueOS Toolkit 自定义配置；
-└── postcss.config.js   # PostCSS 配置文件（=> Tailwind）；
+└── postcss.config.cjs   # PostCSS 配置文件（=> Tailwind）；
 └── package.json        # 定义项目需要的各种模块及配置信息；
 ```
 

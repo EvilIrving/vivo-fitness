@@ -1,0 +1,26 @@
+<template>
+  <div class="flex flex-col items-center">
+    <text class="text-9xl font-bold" style="color: {{ color }}">{{ count }}</text>
+    <text class="mt-2 text-3xl text-gray-400">/ {{ target }}</text>
+  </div>
+</template>
+
+<script>
+  export default {
+    props: {
+      count: {
+        default: 0,
+      },
+      target: {
+        default: 12,
+      },
+      color: {
+        default: '#3B82F6',
+      },
+    },
+  }
+</script>
+
+<style>
+  @tailwind utilities;
+</style>

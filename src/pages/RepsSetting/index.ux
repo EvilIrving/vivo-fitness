@@ -1,0 +1,87 @@
+<template>
+  <div class="flex h-full flex-col items-center justify-center bg-white">
+    <text class="text-3xl font-bold text-gray-800">{{ actionName }}</text>
+    
+    <div class="mt-12 flex flex-col items-center">
+      <text class="text-2xl text-gray-600">设定目标次数</text>
+      
+      <div class="mt-8 flex items-center">
+        <div class="flex h-20 w-20 items-center justify-center rounded-full bg-gray-200" @click="decrease">
+          <text class="text-5xl text-gray-600">-</text>
+        </div>
+        
+        <text class="mx-12 text-8xl font-bold text-brand">{{ targetReps }}</text>
+        
+        <div class="flex h-20 w-20 items-center justify-center rounded-full bg-gray-200" @click="increase">
+          <text class="text-5xl text-gray-600">+</text>
+        </div>
+      </div>
+      
+      <text class="mt-6 text-2xl text-gray-400">次/组</text>
+    </div>
+    
+    <div class="mt-16 flex w-full flex-col px-8">
+      <div class="rounded-full bg-brand py-5" @click="startTraining">
+        <text class="text-center text-3xl font-bold text-white">开始训练</text>
+      </div>
+      
+      <div class="mt-4 rounded-full border-2 border-gray-300 py-5" @click="goBack">
+        <text class="text-center text-3xl text-gray-600">返回</text>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+  import { CONFIG } from '../../helper/constants.js'
+
+  export default {
+    data: {
+      actionCode: '',
+      actionName: '',
+      targetReps: CONFIG.DEFAULT_TARGET_REPS,
+    },
+
+    onInit() {
+      this.actionCode = this.actionCode || ''
+      this.actionName = this.actionName || '未知动作'
+      console.log('次数设定页初始化:', this.actionName)
+    },
+
+    increase() {
+      if (this.targetReps < 50) {
+        this.targetReps++
+      }
+    },
+
+    decrease() {
+      if (this.targetReps > 1) {
+        this.targetReps--
+      }
+    },
+
+    startTraining() {
+      console.log('开始训练:', this.actionName, this.targetReps)
+      
+      // 震动反馈
+      global.vibrator.vibrate({ mode: 'short' })
+      
+      global.router.push({
+        uri: '/pages/TrainingReady',
+        params: {
+          actionCode: this.actionCode,
+          actionName: this.actionName,
+          targetReps: String(this.targetReps),
+        },
+      })
+    },
+
+    goBack() {
+      global.router.back()
+    },
+  }
+</script>
+
+<style>
+  @tailwind utilities;
+</style>

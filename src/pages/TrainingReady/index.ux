@@ -1,0 +1,107 @@
+<template>
+  <div class="flex h-full flex-col items-center justify-center bg-white">
+    <!-- 动作名称 -->
+    <text class="text-4xl font-bold text-gray-800">{{ actionName }}</text>
+    
+    <!-- 目标信息 -->
+    <div class="mt-8 flex flex-col items-center rounded-lg bg-gray-50 px-12 py-6">
+      <text class="text-2xl text-gray-600">目标次数</text>
+      <text class="mt-2 text-7xl font-bold text-brand">{{ targetReps }}</text>
+      <text class="mt-1 text-xl text-gray-400">次/组</text>
+    </div>
+    
+    <!-- 倒计时显示 -->
+    <div class="mt-12 flex flex-col items-center" if="{{ countdown > 0 }}">
+      <text class="text-2xl text-gray-600">准备开始</text>
+      <text class="mt-4 text-9xl font-bold text-brand">{{ countdown }}</text>
+    </div>
+    
+    <!-- 开始按钮 -->
+    <div class="mt-16 w-full px-8" if="{{ countdown === 0 }}">
+      <div class="rounded-full bg-brand py-6" @click="startCountdown">
+        <text class="text-center text-4xl font-bold text-white">开始训练</text>
+      </div>
+      
+      <div class="mt-4 rounded-full border-2 border-gray-300 py-5" @click="goBack">
+        <text class="text-center text-3xl text-gray-600">返回</text>
+      </div>
+    </div>
+    
+    <!-- 提示文字 -->
+    <text class="mt-8 text-xl text-gray-400" if="{{ countdown === 0 }}">点击按钮后将3秒倒计时开始</text>
+  </div>
+</template>
+
+<script>
+  export default {
+    data: {
+      actionCode: '',
+      actionName: '',
+      targetReps: 12,
+      countdown: 0,
+      timerId: null,
+    },
+
+    onInit() {
+      this.actionCode = this.actionCode || ''
+      this.actionName = this.actionName || '训练'
+      this.targetReps = parseInt(this.targetReps) || 12
+      
+      console.log('训练准备页初始化:', {
+        actionName: this.actionName,
+        targetReps: this.targetReps,
+      })
+    },
+
+    onDestroy() {
+      // 清除定时器
+      if (this.timerId) {
+        clearInterval(this.timerId)
+        this.timerId = null
+      }
+    },
+
+    startCountdown() {
+      // 震动反馈
+      global.vibrator.vibrate({ mode: 'short' })
+      
+      // 开始3秒倒计时
+      this.countdown = 3
+      
+      this.timerId = setInterval(() => {
+        this.countdown--
+        
+        if (this.countdown > 0) {
+          // 每秒震动提示
+          global.vibrator.vibrate({ mode: 'short' })
+        } else {
+          // 倒计时结束,跳转到训练页面
+          clearInterval(this.timerId)
+          this.timerId = null
+          
+          // 长震动表示开始
+          global.vibrator.vibrate({ mode: 'long' })
+          
+          setTimeout(() => {
+            global.router.replace({
+              uri: '/pages/TrainingActive',
+              params: {
+                actionCode: this.actionCode,
+                actionName: this.actionName,
+                targetReps: String(this.targetReps),
+              },
+            })
+          }, 300)
+        }
+      }, 1000)
+    },
+
+    goBack() {
+      global.router.back()
+    },
+  }
+</script>
+
+<style>
+  @tailwind utilities;
+</style>

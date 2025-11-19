@@ -1,0 +1,124 @@
+<template>
+  <div class="flex h-full flex-col items-center justify-center bg-white">
+    <!-- 完成标志 -->
+    <text class="text-7xl">✅</text>
+    
+    <text class="mt-6 text-4xl font-bold text-green-600">组完成!</text>
+    
+    <!-- 动作信息 -->
+    <text class="mt-8 text-3xl font-bold text-gray-800">{{ actionName }}</text>
+    
+    <!-- 完成数据 -->
+    <div class="mt-8 flex flex-col items-center rounded-lg bg-gray-50 px-12 py-6">
+      <text class="text-2xl text-gray-600">第 {{ currentSet }} 组</text>
+      <div class="mt-4 flex items-baseline">
+        <text class="text-7xl font-bold text-brand">{{ actualReps }}</text>
+        <text class="ml-2 text-3xl text-gray-400">/ {{ targetReps }} 次</text>
+      </div>
+    </div>
+    
+    <!-- 操作按钮 -->
+    <div class="mt-16 flex w-full flex-col px-8">
+      <div class="rounded-full bg-brand py-5" @click="continueNextSet">
+        <text class="text-center text-3xl font-bold text-white">继续下一组</text>
+      </div>
+      
+      <div class="mt-4 rounded-full border-2 border-gray-300 py-5" @click="finishTraining">
+        <text class="text-center text-3xl text-gray-600">结束训练</text>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+  import { saveRecord, clearCurrentSession } from '../../helper/storageService.js'
+
+  export default {
+    data: {
+      actionCode: '',
+      actionName: '',
+      actualReps: 0,
+      targetReps: 12,
+      currentSet: 1,
+    },
+
+    onInit() {
+      this.actionCode = this.actionCode || ''
+      this.actionName = this.actionName || '训练'
+      this.actualReps = parseInt(this.actualReps) || 0
+      this.targetReps = parseInt(this.targetReps) || 12
+      this.currentSet = parseInt(this.currentSet) || 1
+      
+      console.log('组完成页初始化:', {
+        actionName: this.actionName,
+        actualReps: this.actualReps,
+        targetReps: this.targetReps,
+        currentSet: this.currentSet,
+      })
+    },
+
+    continueNextSet() {
+      console.log('继续下一组')
+      
+      // 震动反馈
+      global.vibrator.vibrate({ mode: 'short' })
+      
+      // 返回到训练页面,开始下一组
+      global.router.replace({
+        uri: '/pages/TrainingActive',
+        params: {
+          actionCode: this.actionCode,
+          actionName: this.actionName,
+          targetReps: String(this.targetReps),
+          currentSet: String(this.currentSet + 1),
+        },
+      })
+    },
+
+    async finishTraining() {
+      console.log('结束训练,保存记录')
+      
+      // 构建训练记录
+      const record = {
+        actionCode: this.actionCode,
+        actionName: this.actionName,
+        sets: [
+          {
+            setNumber: this.currentSet,
+            targetReps: this.targetReps,
+            actualReps: this.actualReps,
+            startTime: Date.now() - 60000, // 简化处理
+            endTime: Date.now(),
+            setDuration: 60, // 简化处理
+          },
+        ],
+        totalReps: this.actualReps,
+        duration: 60,
+      }
+      
+      // 保存记录
+      const success = await saveRecord(record)
+      
+      if (success) {
+        global.prompt.showToast({
+          message: '训练记录已保存',
+        })
+      }
+      
+      // 清除当前会话
+      await clearCurrentSession()
+      
+      // 返回首页
+      setTimeout(() => {
+        global.router.clear()
+        global.router.replace({
+          uri: '/pages/ActionList',
+        })
+      }, 500)
+    },
+  }
+</script>
+
+<style>
+  @tailwind utilities;
+</style>

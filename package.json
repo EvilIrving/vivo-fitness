@@ -1,6 +1,7 @@
 {
   "name": "fiteness",
   "version": "1.0.0",
+  "type": "module",
   "packageManager": "pnpm@^9.9.0",
   "description": "Application development template using Tailwind CSS.",
   "scripts": {
