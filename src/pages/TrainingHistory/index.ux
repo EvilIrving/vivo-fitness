@@ -1,12 +1,11 @@
 <template>
   <div class="flex h-full flex-col bg-gray-50">
     <!-- 顶部标题栏 -->
-    <div class="flex items-center justify-between bg-white px-5 py-5 shadow-sm">
-      <div class="flex h-10 w-10 items-center justify-center" @click="goBack">
+    <div class="relative flex items-center bg-white px-5 py-5 shadow-sm">
+      <div class="absolute left-5 flex h-10 w-10 items-center justify-center" @click="goBack">
         <image class="h-6 w-6" src="/assets/icons/chevron-left.svg"></image>
       </div>
-      <text class="text-2xl font-bold text-gray-800">训练历史</text>
-      <div class="w-10"></div>
+      <text class="flex-1 text-center text-2xl font-bold text-gray-800">训练历史</text>
     </div>
 
     <!-- 加载状态 -->
@@ -33,8 +32,8 @@
 
       <!-- 记录列表 -->
       <div class="mt-4 flex-1">
-        <!-- 空状态 -->
-        <div class="flex flex-col items-center justify-center pt-20" if="{{ records.length === 0 }}">
+        <!-- 空状态 --> 
+        <div class="flex flex-col items-center justify-center pt-2" if="{{ records.length === 0 }}">
           <text class="text-6xl">📊</text>
           <text class="mt-4 text-xl text-gray-400">暂无训练记录</text>
           <text class="mt-2 text-base text-gray-300">完成训练后会在这里显示</text>
@@ -42,7 +41,7 @@
         
         <!-- 记录列表 -->
         <div class="flex flex-col" if="{{ records.length > 0 }}">
-          <text class="px-5 pb-2 text-base text-gray-500">最近训练</text>
+          <text class="px-2 pb-2 text-base text-gray-500">最近训练</text>
           <list class="flex-1" scrollbar="true">
             <list-item
               class="mx-4 mb-3 overflow-hidden rounded-xl bg-white shadow-sm"
