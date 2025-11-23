@@ -15,7 +15,7 @@
     </div>
 
     <!-- 内容区域 -->
-    <div class="flex flex-1 flex-col" if="{{ !loading }}">
+    <div class="flex flex-1 flex-col items-center justify-center" if="{{ !loading }}">
       <!-- 统计数据卡片 -->
       <div class="mx-4 mt-4 rounded-xl bg-white p-5 shadow-sm">
         <div class="flex justify-around">
