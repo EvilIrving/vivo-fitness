@@ -3,7 +3,7 @@
     <!-- 标题栏 -->
     <div class="flex items-center justify-between bg-white px-4 py-6 shadow-sm">
       <div class="flex h-12 w-12 items-center justify-center" @click="goBack">
-        <text class="text-3xl text-gray-600">‹</text>
+        <image class="h-6 w-6" src="/assets/icons/chevron-left.svg"></image>
       </div>
       <text class="text-3xl font-bold text-gray-800">训练详情</text>
       <div class="w-12"></div>
@@ -57,7 +57,7 @@
 
     <!-- 找不到记录 -->
     <div class="flex flex-1 flex-col items-center justify-center" if="{{ !loading && !record }}">
-      <text class="text-6xl">❌</text>
+      <image class="h-16 w-16" src="/assets/icons/close.svg"></image>
       <text class="mt-4 text-2xl text-gray-400">找不到训练记录</text>
       <div class="mt-8 rounded-full bg-gray-300 px-8 py-4" @click="goBack">
         <text class="text-2xl text-white">返回</text>

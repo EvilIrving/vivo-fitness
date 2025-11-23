@@ -1,33 +1,40 @@
 <template>
-  <div class="flex h-full flex-col items-center justify-center bg-gradient-to-b from-blue-50 to-white">
-    <!-- 动作名称 -->
-    <text class="text-3xl font-bold text-gray-700">{{ actionName }}</text>
-    
-    <!-- 当前组数 -->
-    <text class="mt-2 text-xl text-gray-500">第 {{ currentSet }} 组</text>
-    
-    <!-- 当前计数 (超大显示) -->
-    <div class="mt-12 flex flex-col items-center">
-      <text class="text-9xl font-bold" style="color: {{ countColor }}">{{ currentCount }}</text>
-      <text class="mt-2 text-3xl text-gray-400">/ {{ targetReps }}</text>
+  <div class="flex h-full flex-col items-center justify-between bg-white py-12">
+    <!-- 顶部：动作名+组数 一行显示 -->
+    <div class="flex w-full items-center justify-center">
+      <text class="text-2xl text-gray-600">{{ actionName }}</text>
+      <text class="ml-2 text-2xl text-gray-400">第 {{ currentSet }} 组</text>
     </div>
     
-    <!-- 进度条 -->
-    <div class="mt-8 h-3 w-4/5 overflow-hidden rounded-full bg-gray-200">
-      <div class="h-full bg-brand transition-all" style="width: {{ progress }}%"></div>
-    </div>
-    
-    <!-- 状态提示 -->
-    <text class="mt-6 text-2xl text-gray-500">{{ statusText }}</text>
-    
-    <!-- 操作按钮 -->
-    <div class="mt-12 flex space-x-4">
-      <div class="rounded-full bg-gray-300 px-8 py-4" @click="pauseTraining" if="{{ isTraining }}">
-        <text class="text-2xl text-white">暂停</text>
-      </div>
+    <!-- 中心：超大计数 + 圆点进度 -->
+    <div class="flex flex-col items-center">
+      <text class="font-bold  text-4xl" style="color: {{ countColor }}">{{ currentCount }}</text>
+      <text class="mt-1 text-xl text-gray-300">━━━</text>
+      <text class="mt-1 text-3xl text-gray-400">{{ targetReps }}</text>
       
-      <div class="rounded-full bg-red-500 px-8 py-4" @click="stopTraining">
-        <text class="text-2xl text-white">结束</text>
+      <!-- 圆点进度指示器 -->
+      <div class="mt-8 flex items-center justify-center space-x-1.5">
+        <div class="h-2.5 w-2.5 rounded-full" style="background-color: {{ $item ? '#3B82F6' : 'transparent' }}; border: {{ $item ? 'none' : '1px solid #D1D5DB' }}" for="{{ progressDots }}"></div>
+      </div>
+    </div>
+    
+    <!-- 底部操作按钮 -->
+    <div class="flex w-full items-center justify-center" if="{{ isTraining }}">
+      <!-- 训练中：只显示暂停按钮 -->
+      <div class="flex h-20 w-20 items-center justify-center rounded-full bg-gray-300" @click="pauseTraining">
+        <image class="h-10 w-10" src="/assets/icons/pause.svg"></image>
+      </div>
+    </div>
+    
+    <div class="flex w-full items-center  justify-center" if="{{ !isTraining }}">
+      <!-- 已暂停：显示继续+结束按钮 -->
+      <div class="flex items-center justify-center">
+        <div class="flex h-20 w-20 items-center justify-center rounded-full bg-brand" @click="resumeTraining">
+          <image class="h-10 w-10" src="/assets/icons/play.svg"></image>
+        </div>
+        <div class="flex h-20 w-20 items-center justify-center rounded-full bg-gray-300" style="margin-left: 24px" @click="stopTraining">
+          <image class="h-10 w-10" src="/assets/icons/stop.svg"></image>
+        </div>
       </div>
     </div>
   </div>
@@ -37,6 +44,7 @@
   import sensorService from '../../helper/sensorService.js'
   import recognitionAlgorithm from '../../helper/recognitionAlgorithm.js'
   import { saveCurrentSession } from '../../helper/storageService.js'
+  import { DELAY_MS } from '../../helper/constants.js'
 
   export default {
     data: {
@@ -49,6 +57,7 @@
       statusText: '准备中...',
       countColor: '#3B82F6',
       progress: 0,
+      progressDots: [],
       startTime: 0,
     },
 
@@ -57,6 +66,9 @@
       this.actionName = this.actionName || '训练'
       this.targetReps = parseInt(this.targetReps) || 12
       this.startTime = Date.now()
+      
+      // 初始化圆点进度数组
+      this._initProgressDots()
       
       console.log('训练页面初始化:', {
         actionCode: this.actionCode,
@@ -67,7 +79,31 @@
       // 延迟启动训练(给用户准备时间)
       setTimeout(() => {
         this._startSensorMonitoring()
-      }, 1000)
+      }, DELAY_MS.SENSOR_START)
+    },
+
+    _initProgressDots() {
+      // 计算圆点数量（最多15个）
+      const maxDots = 15
+      const dotCount = Math.min(this.targetReps, maxDots)
+      this.progressDots = new Array(dotCount).fill(false)
+    },
+
+    _updateProgressDots() {
+      // 更新圆点显示状态
+      const maxDots = 15
+      const dotCount = Math.min(this.targetReps, maxDots)
+      
+      // 目标次数 ≤ 15：圆点与次数一一对应
+      // 目标次数 > 15：按比例填充圆点
+      if (this.targetReps <= maxDots) {
+        // 一一对应模式
+        this.progressDots = new Array(dotCount).fill(false).map((_, index) => index < this.currentCount)
+      } else {
+        // 比例模式
+        const filledDots = Math.floor(this.currentCount / this.targetReps * maxDots)
+        this.progressDots = new Array(maxDots).fill(false).map((_, index) => index < filledDots)
+      }
     },
 
     onDestroy() {
@@ -83,7 +119,7 @@
       })
       
       if (!success) {
-        this.statusText = '识别器初始化失败'
+        console.error('识别器初始化失败')
         return
       }
       
@@ -95,13 +131,13 @@
         },
         (error) => {
           console.error('传感器错误:', error)
-          this.statusText = error.message
           this.isTraining = false
+          this.countColor = '#EF4444'
         }
       )
       
-      this.statusText = '正在监听动作...'
       this.isTraining = true
+      this.countColor = '#3B82F6'
     },
 
     _onActionDetected(data) {
@@ -113,11 +149,12 @@
       // 更新进度
       this.progress = Math.min((this.currentCount / this.targetReps) * 100, 100)
       
-      // 更新颜色
-      if (this.progress >= 80) {
-        this.countColor = '#F59E0B' // 橙色(接近完成)
-      } else {
-        this.countColor = '#3B82F6' // 蓝色
+      // 更新圆点进度
+      this._updateProgressDots()
+      
+      // 更新颜色（训练中保持蓝色）
+      if (this.isTraining) {
+        this.countColor = '#3B82F6'
       }
       
       // 震动反馈
@@ -132,7 +169,6 @@
     _onSetComplete() {
       console.log('组完成!')
       
-      this.statusText = '目标完成!'
       this.countColor = '#10B981' // 绿色
       this.isTraining = false
       
@@ -167,20 +203,23 @@
             currentSet: String(this.currentSet),
           },
         })
-      }, 1500)
+      }, DELAY_MS.SET_COMPLETE)
     },
 
     pauseTraining() {
-      if (this.isTraining) {
-        sensorService.stop()
-        this.isTraining = false
-        this.statusText = '已暂停'
-        global.prompt.showToast({ message: '训练已暂停' })
-      } else {
-        this._startSensorMonitoring()
-        this.isTraining = true
-        global.prompt.showToast({ message: '继续训练' })
-      }
+      sensorService.pause()
+      recognitionAlgorithm.pause()
+      this.isTraining = false
+      this.countColor = '#F59E0B' // 暂停状态显示橙色
+      global.vibrator.vibrate({ mode: 'short' })
+    },
+
+    resumeTraining() {
+      sensorService.resume()
+      recognitionAlgorithm.resume()
+      this.isTraining = true
+      this.countColor = '#3B82F6' // 恢复训练显示蓝色
+      global.vibrator.vibrate({ mode: 'short' })
     },
 
     stopTraining() {
@@ -191,7 +230,7 @@
       
       setTimeout(() => {
         global.router.back()
-      }, 500)
+      }, DELAY_MS.PAGE_TRANSITION)
     },
   }
 </script>

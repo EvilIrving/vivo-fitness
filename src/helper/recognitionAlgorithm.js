@@ -4,6 +4,7 @@
  */
 
 import { getRecognitionParams } from './actionConfig.js'
+import { BUFFER_SIZE, THRESHOLD_RATIOS } from './constants.js'
 
 /**
  * 动作识别状态枚举
@@ -72,6 +73,22 @@ class RecognitionAlgorithm {
   }
 
   /**
+   * 暂停识别（保留状态）
+   */
+  pause() {
+    // 不清空状态和数据，仅停止处理
+    console.log('识别算法已暂停，状态保留')
+  }
+
+  /**
+   * 恢复识别（继续使用现有状态）
+   */
+  resume() {
+    // 不重置状态，继续处理
+    console.log('识别算法已恢夏，状态继续')
+  }
+
+  /**
    * 处理传感器数据
    * @param {object} fusedData 融合后的传感器数据
    */
@@ -83,8 +100,8 @@ class RecognitionAlgorithm {
     // 添加到缓冲区
     this.dataBuffer.push(fusedData)
     
-    // 限制缓冲区大小(最近50个数据点)
-    if (this.dataBuffer.length > 50) {
+    // 限制缓冲区大小
+    if (this.dataBuffer.length > BUFFER_SIZE.RECOGNITION_DATA) {
       this.dataBuffer.shift()
     }
 
@@ -183,7 +200,7 @@ class RecognitionAlgorithm {
    */
   _handleIdleState(value, secondaryValue, timestamp) {
     // 检测是否超过阈值
-    if (value > this.params.peakThreshold * 0.5) {
+    if (value > this.params.peakThreshold * THRESHOLD_RATIOS.MOTION_START) {
       // 运动启动
       this.state = STATE.MOTION_START
       this.motionStartTime = timestamp
@@ -198,7 +215,7 @@ class RecognitionAlgorithm {
    */
   _handleMotionStartState(value, secondaryValue, timestamp) {
     // 持续运动检测
-    if (value > this.params.peakThreshold * 0.7) {
+    if (value > this.params.peakThreshold * THRESHOLD_RATIOS.MOTION_CONTINUE) {
       this.state = STATE.MOTION_IN_PROGRESS
       console.log('动作进行中')
     } else {
@@ -249,7 +266,7 @@ class RecognitionAlgorithm {
    */
   _handlePeakDetectedState(value, secondaryValue, timestamp) {
     // 检测数值回落
-    if (value < this.peakValue * 0.6) {
+    if (value < this.peakValue * THRESHOLD_RATIOS.PEAK_DETECTED) {
       this.state = STATE.RETURNING
       console.log('数值开始回落')
     }
@@ -261,7 +278,7 @@ class RecognitionAlgorithm {
    */
   _handleReturningState(value, secondaryValue, timestamp) {
     // 检测是否回归基线附近
-    if (value < this.params.peakThreshold * 0.5) {
+    if (value < this.params.peakThreshold * THRESHOLD_RATIOS.RETURNING) {
       // 时间窗口验证
       const duration = (timestamp - this.motionStartTime) / 1000
       

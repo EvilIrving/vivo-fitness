@@ -1,32 +1,31 @@
 <template>
-  <div class="flex h-full flex-col items-center justify-center bg-white">
-    <text class="text-3xl font-bold text-gray-800">{{ actionName }}</text>
-    
-    <div class="mt-12 flex flex-col items-center">
-      <text class="text-2xl text-gray-600">设定目标次数</text>
-      
-      <div class="mt-8 flex items-center">
-        <div class="flex h-20 w-20 items-center justify-center rounded-full bg-gray-200" @click="decrease">
-          <text class="text-5xl text-gray-600">-</text>
-        </div>
-        
-        <text class="mx-12 text-8xl font-bold text-brand">{{ targetReps }}</text>
-        
-        <div class="flex h-20 w-20 items-center justify-center rounded-full bg-gray-200" @click="increase">
-          <text class="text-5xl text-gray-600">+</text>
-        </div>
-      </div>
-      
-      <text class="mt-6 text-2xl text-gray-400">次/组</text>
+  <div class="flex h-full flex-col items-center justify-around bg-white">
+    <!-- 顶部：动作名 -->
+    <div class="flex w-full justify-center">
+      <text class="text-4xl" style="color: #6b7280">{{ actionName }}</text>
     </div>
     
-    <div class="mt-16 flex w-full flex-col px-8">
-      <div class="rounded-full bg-brand py-5" @click="startTraining">
-        <text class="text-center text-3xl font-bold text-white">开始训练</text>
+    <!-- 中心：简洁大数字 -->
+    <div class="flex flex-col items-center">
+      <text class="text-5xl font-bold" style="color: #1f2937">{{ targetReps }}</text>
+      <text class="mt-4 text-2xl" style="color: #6b7280">目标次数</text>
+    </div>
+    
+    <!-- 底部：精简按钮组 -->
+    <div class="flex w-full items-center justify-center">
+      <!-- 减少按钮 -->
+      <div class="mx-2 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100" @click="decrease">
+        <image class="h-8 w-8" src="/assets/icons/minus.svg"></image>
       </div>
       
-      <div class="mt-4 rounded-full border-2 border-gray-300 py-5" @click="goBack">
-        <text class="text-center text-3xl text-gray-600">返回</text>
+      <!-- 确认按钮 -->
+      <div class="mx-2 flex h-20 w-20 items-center justify-center rounded-full bg-brand" @click="startTraining">
+        <image class="h-10 w-10" src="/assets/icons/check.svg"></image>
+      </div>
+      
+      <!-- 增加按钮 -->
+      <div class="mx-2 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100" @click="increase">
+        <image class="h-8 w-8" src="/assets/icons/plus.svg"></image>
       </div>
     </div>
   </div>
@@ -74,10 +73,6 @@
           targetReps: String(this.targetReps),
         },
       })
-    },
-
-    goBack() {
-      global.router.back()
     },
   }
 </script>

@@ -3,7 +3,7 @@
  * 提供传感器订阅、数据采集和预处理功能
  */
 
-import { CONFIG, ERROR_CODES } from './constants.js'
+import { CONFIG, BUFFER_SIZE, VALIDATION_RANGE, ERROR_CODES } from './constants.js'
 
 /**
  * 传感器数据类
@@ -45,9 +45,7 @@ class SensorService {
       },
       fail: (data, code) => {
         console.error('加速度计订阅失败:', code, data)
-        if (code === ERROR_CODES.SENSOR_NOT_SUPPORTED) {
-          this._handleError('设备不支持加速度计', code)
-        }
+        this._handleSensorError('加速度计', code, data)
       },
     })
 
@@ -58,9 +56,7 @@ class SensorService {
       },
       fail: (data, code) => {
         console.error('陀螺仪订阅失败:', code, data)
-        if (code === ERROR_CODES.SENSOR_NOT_SUPPORTED) {
-          this._handleError('设备不支持陀螺仪', code)
-        }
+        this._handleSensorError('陀螺仪', code, data)
       },
     })
 
@@ -69,7 +65,65 @@ class SensorService {
   }
 
   /**
-   * 停止传感器监听
+   * 暂停传感器监听（保留数据缓存）
+   */
+  pause() {
+    if (!this.isListening) {
+      return
+    }
+
+    try {
+      global.sensor.unsubscribeAccelerometer()
+      global.sensor.unsubscribeGyroscope()
+      this.isListening = false
+      console.log('传感器已暂停（数据保留）')
+    } catch (e) {
+      console.error('暂停传感器失败:', e)
+    }
+  }
+
+  /**
+   * 恢复传感器监听（继续使用现有缓存）
+   */
+  resume() {
+    if (this.isListening) {
+      console.warn('传感器已在监听中')
+      return
+    }
+
+    if (!this.dataCallback) {
+      console.error('无法恢复：缺少回调函数')
+      return
+    }
+
+    // 订阅加速度计
+    global.sensor.subscribeAccelerometer({
+      callback: (ret) => {
+        this._onAccelerometerData(ret)
+      },
+      fail: (data, code) => {
+        console.error('加速度计订阅失败:', code, data)
+        this._handleSensorError('加速度计', code, data)
+      },
+    })
+
+    // 订阅陀螺仪
+    global.sensor.subscribeGyroscope({
+      callback: (ret) => {
+        this._onGyroscopeData(ret)
+      },
+      fail: (data, code) => {
+        console.error('陀螺仪订阅失败:', code, data)
+        this._handleSensorError('陀螺仪', code, data)
+      },
+    })
+
+    this.isListening = true
+    console.log('传感器监听已恢复')
+  }
+
+  /**
+   * 停止传感器监听（清空数据缓存）
    */
   stop() {
     if (!this.isListening) {
@@ -96,7 +150,7 @@ class SensorService {
     const timestamp = Date.now()
     
     // 数据验证
-    if (!this._validateData(ret)) {
+    if (!this._validateAccData(ret)) {
       return
     }
 
@@ -108,8 +162,8 @@ class SensorService {
       timestamp,
     })
 
-    // 限制缓存大小(保留最近100个数据点)
-    if (this.accData.length > 100) {
+    // 限制缓存大小
+    if (this.accData.length > BUFFER_SIZE.SENSOR_DATA) {
       this.accData.shift()
     }
 
@@ -125,7 +179,7 @@ class SensorService {
     const timestamp = Date.now()
     
     // 数据验证
-    if (!this._validateData(ret)) {
+    if (!this._validateGyroData(ret)) {
       return
     }
 
@@ -138,7 +192,7 @@ class SensorService {
     })
 
     // 限制缓存大小
-    if (this.gyroData.length > 100) {
+    if (this.gyroData.length > BUFFER_SIZE.SENSOR_DATA) {
       this.gyroData.shift()
     }
 
@@ -147,10 +201,10 @@ class SensorService {
   }
 
   /**
-   * 验证传感器数据
+   * 验证加速度计数据
    * @private
    */
-  _validateData(data) {
+  _validateAccData(data) {
     if (!data || typeof data !== 'object') {
       return false
     }
@@ -162,9 +216,34 @@ class SensorService {
       return false
     }
 
-    // 检查是否超出合理范围(加速度 ±20g, 陀螺仪 ±2000°/s)
-    const max = 200
-    if (Math.abs(x) > max || Math.abs(y) > max || Math.abs(z) > max) {
+    // 加速度范围检查：±200 m/s² (约±20g)
+    const maxAcc = VALIDATION_RANGE.ACCELEROMETER_MAX
+    if (Math.abs(x) > maxAcc || Math.abs(y) > maxAcc || Math.abs(z) > maxAcc) {
+      return false
+    }
+
+    return true
+  }
+
+  /**
+   * 验证陀螺仪数据
+   * @private
+   */
+  _validateGyroData(data) {
+    if (!data || typeof data !== 'object') {
+      return false
+    }
+
+    const { x, y, z } = data
+
+    // 检查是否为有效数字
+    if (isNaN(x) || isNaN(y) || isNaN(z)) {
+      return false
+    }
+
+    // 陀螺仪范围检查：±2000 °/s
+    const maxGyro = VALIDATION_RANGE.GYROSCOPE_MAX
+    if (Math.abs(x) > maxGyro || Math.abs(y) > maxGyro || Math.abs(z) > maxGyro) {
       return false
     }
 
@@ -259,14 +338,32 @@ class SensorService {
   }
 
   /**
-   * 处理错误
+   * 处理传感器错误
    * @private
    */
-  _handleError(message, code) {
+  _handleSensorError(sensorName, code, data) {
+    let errorMessage = ''
+    
+    switch (code) {
+      case ERROR_CODES.SENSOR_NOT_SUPPORTED:
+        errorMessage = `设备不支持${sensorName}`
+        break
+      case 201:
+        errorMessage = `${sensorName}权限被拒绝`
+        break
+      case 1000:
+        errorMessage = `${sensorName}系统繁忙`
+        break
+      default:
+        errorMessage = `${sensorName}订阅失败 (code: ${code})`
+    }
+    
     if (this.errorCallback) {
       this.errorCallback({
-        message,
+        message: errorMessage,
         code,
+        sensorName,
+        data,
       })
     }
   }

@@ -122,7 +122,9 @@ module.exports = {
       }),
       spacing: {
         1: '4px',
+        1.5: '6px',
         2: '8px',
+        2.5: '10px',
         3: '12px',
         4: '16px',
         5: '20px',
@@ -138,6 +140,7 @@ module.exports = {
         18: '72px',
         20: '80px',
         24: '96px',
+        25: '100px',
         28: '112px',
         32: '128px',
         36: '144px',
@@ -191,6 +194,7 @@ module.exports = {
         '7xl': ['72px', { lineHeight: '60px' }],
         '8xl': ['96px', { lineHeight: '60px' }],
         '9xl': ['128px', { lineHeight: '60px' }],
+        'count-xl': ['120px', { lineHeight: '1' }],
       },
       maxWidth: {
         xs: '320px',

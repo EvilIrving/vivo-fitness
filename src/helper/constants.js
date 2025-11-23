@@ -47,4 +47,32 @@ export const CONFIG = {
   },
 }
 
+// ==================== 缓冲区大小常量 ====================
+export const BUFFER_SIZE = {
+  SENSOR_DATA: 100,           // 传感器数据缓冲区大小
+  RECOGNITION_DATA: 50,       // 识别算法数据缓冲区大小
+}
+
+// ==================== 阈值系数常量 ====================
+export const THRESHOLD_RATIOS = {
+  MOTION_START: 0.5,          // 运动启动阈值系数
+  MOTION_CONTINUE: 0.7,       // 运动持续阈值系数
+  PEAK_DETECTED: 0.6,         // 峰值检测回落系数
+  RETURNING: 0.5,             // 回归基线系数
+}
+
+// ==================== 延迟时间常量（毫秒）====================
+export const DELAY_MS = {
+  PAGE_TRANSITION: 500,       // 页面跳转延迟
+  SENSOR_START: 1000,         // 传感器启动延迟
+  SET_COMPLETE: 1500,         // 组完成提示延迟
+  TOAST_DISPLAY: 500,         // Toast显示后延迟
+}
+
+// ==================== 数据验证范围 ====================
+export const VALIDATION_RANGE = {
+  ACCELEROMETER_MAX: 200,     // 加速度最大值 (m/s²)
+  GYROSCOPE_MAX: 2000,        // 陀螺仪最大值 (°/s)
+}
+
 

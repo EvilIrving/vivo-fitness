@@ -34,7 +34,7 @@ function formatDate(date) {
  * 获取所有训练记录
  * @returns {Promise<Array>} 训练记录数组
  */
-export function getAllRecords() {
+export async function getAllRecords() {
   return new Promise((resolve) => {
     global.storage.get({
       key: STORAGE_KEYS.TRAINING_RECORDS,
@@ -60,31 +60,31 @@ export function getAllRecords() {
  * @param {object} record 训练记录对象
  * @returns {Promise<boolean>} 是否成功
  */
-export function saveRecord(record) {
-  return new Promise(async (resolve) => {
-    try {
-      const records = await getAllRecords()
-      
-      // 生成记录ID
-      if (!record.recordId) {
-        record.recordId = generateRecordId()
-      }
-      
-      // 添加时间戳
-      if (!record.timestamp) {
-        record.timestamp = Date.now()
-      }
-      
-      // 添加日期
-      if (!record.date) {
-        record.date = formatDate(new Date(record.timestamp))
-      }
-      
-      records.push(record)
-      
+export async function saveRecord(record) {
+  try {
+    const records = await getAllRecords()
+    
+    // 生成记录ID
+    if (!record.recordId) {
+      record.recordId = generateRecordId()
+    }
+    
+    // 添加时间戳
+    if (!record.timestamp) {
+      record.timestamp = Date.now()
+    }
+    
+    // 添加日期
+    if (!record.date) {
+      record.date = formatDate(new Date(record.timestamp))
+    }
+    
+    records.push(record)
+    
+    return new Promise((resolve) => {
       global.storage.set({
         key: STORAGE_KEYS.TRAINING_RECORDS,
-        value: records,
+        value: JSON.stringify(records),
         success: () => {
           console.log('训练记录保存成功:', record.recordId)
           resolve(true)
@@ -94,11 +94,11 @@ export function saveRecord(record) {
           resolve(false)
         },
       })
-    } catch (e) {
-      console.error('保存记录异常:', e)
-      resolve(false)
-    }
-  })
+    })
+  } catch (e) {
+    console.error('保存记录异常:', e)
+    return false
+  }
 }
 
 /**
@@ -106,12 +106,10 @@ export function saveRecord(record) {
  * @param {string} date 日期字符串 YYYY-MM-DD
  * @returns {Promise<Array>} 符合条件的记录数组
  */
-export function getRecordsByDate(date) {
-  return new Promise(async (resolve) => {
-    const records = await getAllRecords()
-    const filtered = records.filter(record => record.date === date)
-    resolve(filtered)
-  })
+export async function getRecordsByDate(date) {
+  const records = await getAllRecords()
+  const filtered = records.filter(record => record.date === date)
+  return filtered
 }
 
 /**
@@ -119,12 +117,10 @@ export function getRecordsByDate(date) {
  * @param {string} actionCode 动作编号
  * @returns {Promise<Array>} 符合条件的记录数组
  */
-export function getRecordsByAction(actionCode) {
-  return new Promise(async (resolve) => {
-    const records = await getAllRecords()
-    const filtered = records.filter(record => record.actionCode === actionCode)
-    resolve(filtered)
-  })
+export async function getRecordsByAction(actionCode) {
+  const records = await getAllRecords()
+  const filtered = records.filter(record => record.actionCode === actionCode)
+  return filtered
 }
 
 /**
@@ -132,13 +128,11 @@ export function getRecordsByAction(actionCode) {
  * @param {number} count 记录数量
  * @returns {Promise<Array>} 最近的记录数组
  */
-export function getRecentRecords(count = 10) {
-  return new Promise(async (resolve) => {
-    const records = await getAllRecords()
-    // 按时间戳降序排序
-    const sorted = records.sort((a, b) => b.timestamp - a.timestamp)
-    resolve(sorted.slice(0, count))
-  })
+export async function getRecentRecords(count = 10) {
+  const records = await getAllRecords()
+  // 按时间戳降序排序
+  const sorted = records.sort((a, b) => b.timestamp - a.timestamp)
+  return sorted.slice(0, count)
 }
 
 /**
@@ -146,15 +140,15 @@ export function getRecentRecords(count = 10) {
  * @param {string} recordId 记录ID
  * @returns {Promise<boolean>} 是否成功
  */
-export function deleteRecord(recordId) {
-  return new Promise(async (resolve) => {
-    try {
-      const records = await getAllRecords()
-      const filtered = records.filter(record => record.recordId !== recordId)
-      
+export async function deleteRecord(recordId) {
+  try {
+    const records = await getAllRecords()
+    const filtered = records.filter(record => record.recordId !== recordId)
+    
+    return new Promise((resolve) => {
       global.storage.set({
         key: STORAGE_KEYS.TRAINING_RECORDS,
-        value: filtered,
+        value: JSON.stringify(filtered),
         success: () => {
           console.log('训练记录删除成功:', recordId)
           resolve(true)
@@ -164,11 +158,11 @@ export function deleteRecord(recordId) {
           resolve(false)
         },
       })
-    } catch (e) {
-      console.error('删除记录异常:', e)
-      resolve(false)
-    }
-  })
+    })
+  } catch (e) {
+    console.error('删除记录异常:', e)
+    return false
+  }
 }
 
 /**
@@ -179,6 +173,7 @@ export function getCurrentSession() {
   return new Promise((resolve) => {
     global.storage.get({
       key: STORAGE_KEYS.CURRENT_SESSION,
+      default: 'null',
       success: (data) => {
         try {
           const session = JSON.parse(data)
@@ -203,7 +198,7 @@ export function saveCurrentSession(session) {
   return new Promise((resolve) => {
     global.storage.set({
       key: STORAGE_KEYS.CURRENT_SESSION,
-      value: session,
+      value: JSON.stringify(session),
       success: () => {
         resolve(true)
       },
@@ -240,15 +235,16 @@ export function getUserStats() {
   return new Promise((resolve) => {
     global.storage.get({
       key: STORAGE_KEYS.USER_STATS,
+      default: JSON.stringify({
+        totalWorkouts: 0,
+        totalReps: 0,
+        totalDuration: 0,
+        lastWorkoutDate: null,
+      }),
       success: (data) => {
         try {
           const stats = JSON.parse(data)
-          resolve(stats || {
-            totalWorkouts: 0,
-            totalReps: 0,
-            totalDuration: 0,
-            lastWorkoutDate: null,
-          })
+          resolve(stats)
         } catch (e) {
           resolve({
             totalWorkouts: 0,
@@ -275,20 +271,20 @@ export function getUserStats() {
  * @param {object} newData 新增的统计数据
  * @returns {Promise<boolean>} 是否成功
  */
-export function updateUserStats(newData) {
-  return new Promise(async (resolve) => {
-    try {
-      const stats = await getUserStats()
-      
-      // 累加数据
-      stats.totalWorkouts += 1
-      stats.totalReps += newData.totalReps || 0
-      stats.totalDuration += newData.duration || 0
-      stats.lastWorkoutDate = newData.date || formatDate(new Date())
-      
+export async function updateUserStats(newData) {
+  try {
+    const stats = await getUserStats()
+    
+    // 累加数据
+    stats.totalWorkouts += 1
+    stats.totalReps += newData.totalReps || 0
+    stats.totalDuration += newData.duration || 0
+    stats.lastWorkoutDate = newData.date || formatDate(new Date())
+    
+    return new Promise((resolve) => {
       global.storage.set({
         key: STORAGE_KEYS.USER_STATS,
-        value: stats,
+        value: JSON.stringify(stats),
         success: () => {
           resolve(true)
         },
@@ -296,9 +292,9 @@ export function updateUserStats(newData) {
           resolve(false)
         },
       })
-    } catch (e) {
-      console.error('更新统计数据异常:', e)
-      resolve(false)
-    }
-  })
+    })
+  } catch (e) {
+    console.error('更新统计数据异常:', e)
+    return false
+  }
 }

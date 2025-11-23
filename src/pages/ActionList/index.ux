@@ -1,38 +1,28 @@
 <template>
-  <div class="flex h-full flex-col bg-gray-50">
-    <!-- 标题栏 -->
-    <div class="flex items-center justify-center bg-white py-6 shadow-sm">
-      <text class="text-4xl font-bold text-brand">健身计数助手</text>
+  <div class="flex h-full flex-col bg-white">
+    <!-- 顶部标题（简化） -->
+    <div class="flex items-center justify-center py-6">
+      <image class="h-10 w-10" src="/assets/icons/fitness.svg"></image>
+      <text class="ml-2 text-2xl font-bold text-brand">健身计数</text>
     </div>
 
     <!-- 动作列表 -->
     <list class="flex-1" scrollbar="true">
       <list-item
-        class="mx-4 my-2 flex flex-col rounded-lg bg-white p-4 shadow-sm"
+        class="mx-6 my-2 flex items-center justify-between rounded-lg bg-gray-50 px-6 py-5"
         type="list-item"
         @click="onActionClick($item)"
         for="{{ actionList }}">
-        <div class="flex items-center">
-          <!-- <image class="h-16 w-16 rounded-full" src="{{$item.icon}}"></image> -->
-          <div class="ml-4 flex-1">
-            <text class="text-3xl font-bold text-gray-800">{{ $item.actionName }}</text>
-            <text class="mt-1 text-2xl text-gray-500">{{ $item.category }}</text>
-            <text class="mt-1 text-xl text-gray-400">{{ $item.description }}</text>
-          </div>
-          <text class="text-3xl text-gray-300">›</text>
-        </div>
+        <text class="text-3xl font-bold text-gray-800">{{ $item.actionName }}</text>
+        <image class="h-6 w-6" src="/assets/icons/chevron-right.svg"></image>
       </list-item>
     </list>
 
-    <!-- 底部导航 -->
-    <div class="flex items-center justify-around border-t border-gray-200 bg-white py-4">
-      <div class="flex flex-col items-center" @click="onHomeClick">
-        <text class="text-3xl">🏋️</text>
-        <text class="mt-1 text-xl text-brand">训练</text>
-      </div>
+    <!-- 底部历史按钮 -->
+    <div class="flex items-center justify-center py-6">
       <div class="flex flex-col items-center" @click="onHistoryClick">
-        <text class="text-3xl">📊</text>
-        <text class="mt-1 text-xl text-gray-500">历史</text>
+        <image class="h-10 w-10" src="/assets/icons/chart.svg"></image>
+        <text class="mt-1 text-lg text-gray-500">历史</text>
       </div>
     </div>
   </div>
@@ -65,10 +55,6 @@
       global.router.push({
         uri: '/pages/TrainingHistory',
       })
-    },
-
-    onHomeClick() {
-      // 已在首页
     },
   }
 </script>
