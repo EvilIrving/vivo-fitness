@@ -6,8 +6,10 @@
 //
 
 import Foundation
+import Combine
 import CoreMotion
 
+@MainActor
 class MotionManager: ObservableObject {
     private let motionManager = CMMotionManager()
     private var accBuffer: [SensorReading] = []

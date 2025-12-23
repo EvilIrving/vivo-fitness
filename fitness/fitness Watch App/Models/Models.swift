@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Combine
 
 // MARK: - 动作类型枚举
 enum ActionCode: String, Codable, CaseIterable {
@@ -245,6 +246,7 @@ struct UserStats: Codable {
 }
 
 // MARK: - 当前训练会话
+@MainActor
 class TrainingSession: ObservableObject {
     @Published var actionCode: ActionCode
     @Published var actionName: String

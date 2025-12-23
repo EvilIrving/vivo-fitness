@@ -6,36 +6,7 @@
 	objectVersion = 77;
 	objects = {
 
-/* Begin PBXBuildFile section */
-		1ABBE8A42EF9AE8000584595 /* fitness Watch App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 1ABBE8A32EF9AE8000584595 /* fitness Watch App.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-/* End PBXBuildFile section */
-
-/* Begin PBXContainerItemProxy section */
-		1ABBE8A52EF9AE8000584595 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 1ABBE8972EF9AE8000584595 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 1ABBE8A22EF9AE8000584595;
-			remoteInfo = "fitness Watch App";
-		};
-/* End PBXContainerItemProxy section */
-
-/* Begin PBXCopyFilesBuildPhase section */
-		1ABBE8B32EF9AE8100584595 /* Embed Watch Content */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
-			dstSubfolderSpec = 16;
-			files = (
-				1ABBE8A42EF9AE8000584595 /* fitness Watch App.app in Embed Watch Content */,
-			);
-			name = "Embed Watch Content";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXCopyFilesBuildPhase section */
-
 /* Begin PBXFileReference section */
-		1ABBE89D2EF9AE8000584595 /* fitness.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = fitness.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1ABBE8A32EF9AE8000584595 /* fitness Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "fitness Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -69,7 +40,6 @@
 		1ABBE89E2EF9AE8000584595 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				1ABBE89D2EF9AE8000584595 /* fitness.app */,
 				1ABBE8A32EF9AE8000584595 /* fitness Watch App.app */,
 			);
 			name = Products;
@@ -78,25 +48,6 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		1ABBE89C2EF9AE8000584595 /* fitness */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 1ABBE8B42EF9AE8100584595 /* Build configuration list for PBXNativeTarget "fitness" */;
-			buildPhases = (
-				1ABBE89B2EF9AE8000584595 /* Resources */,
-				1ABBE8B32EF9AE8100584595 /* Embed Watch Content */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				1ABBE8A62EF9AE8000584595 /* PBXTargetDependency */,
-			);
-			name = fitness;
-			packageProductDependencies = (
-			);
-			productName = fitness;
-			productReference = 1ABBE89D2EF9AE8000584595 /* fitness.app */;
-			productType = "com.apple.product-type.application.watchapp2-container";
-		};
 		1ABBE8A22EF9AE8000584595 /* fitness Watch App */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 1ABBE8B02EF9AE8100584595 /* Build configuration list for PBXNativeTarget "fitness Watch App" */;
@@ -129,9 +80,6 @@
 				LastSwiftUpdateCheck = 2610;
 				LastUpgradeCheck = 2610;
 				TargetAttributes = {
-					1ABBE89C2EF9AE8000584595 = {
-						CreatedOnToolsVersion = 26.1.1;
-					};
 					1ABBE8A22EF9AE8000584595 = {
 						CreatedOnToolsVersion = 26.1.1;
 					};
@@ -151,20 +99,12 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				1ABBE89C2EF9AE8000584595 /* fitness */,
 				1ABBE8A22EF9AE8000584595 /* fitness Watch App */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		1ABBE89B2EF9AE8000584595 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		1ABBE8A12EF9AE8000584595 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -183,14 +123,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
-
-/* Begin PBXTargetDependency section */
-		1ABBE8A62EF9AE8000584595 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 1ABBE8A22EF9AE8000584595 /* fitness Watch App */;
-			targetProxy = 1ABBE8A52EF9AE8000584595 /* PBXContainerItemProxy */;
-		};
-/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		1ABBE8AE2EF9AE8100584595 /* Debug */ = {
@@ -376,41 +308,6 @@
 			};
 			name = Release;
 		};
-		1ABBE8B52EF9AE8100584595 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = QZZ878S3NS;
-				INFOPLIST_KEY_CFBundleDisplayName = fitness;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.cain.fitness;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = iphoneos;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
-			};
-			name = Debug;
-		};
-		1ABBE8B62EF9AE8100584595 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = QZZ878S3NS;
-				INFOPLIST_KEY_CFBundleDisplayName = fitness;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.cain.fitness;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = iphoneos;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
-				VALIDATE_PRODUCT = YES;
-			};
-			name = Release;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -428,15 +325,6 @@
 			buildConfigurations = (
 				1ABBE8B12EF9AE8100584595 /* Debug */,
 				1ABBE8B22EF9AE8100584595 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		1ABBE8B42EF9AE8100584595 /* Build configuration list for PBXNativeTarget "fitness" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				1ABBE8B52EF9AE8100584595 /* Debug */,
-				1ABBE8B62EF9AE8100584595 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

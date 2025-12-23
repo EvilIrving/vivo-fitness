@@ -6,7 +6,9 @@
 //
 
 import Foundation
+import Combine
 
+@MainActor
 class ActionRecognizer: ObservableObject {
     private var params: RecognitionParams
     private var currentState: RecognitionState = .idle
