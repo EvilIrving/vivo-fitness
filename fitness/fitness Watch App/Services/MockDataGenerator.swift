@@ -65,7 +65,7 @@ class MockDataGenerator {
     
     // MARK: - 生成数据
     private func generateData() {
-        let params = actionCode.recognitionParams
+        let params = actionCode.detectionParams
         let timestamp = Date().timeIntervalSince1970
         
         // 根据动作阶段生成数据
@@ -94,9 +94,17 @@ class MockDataGenerator {
     }
     
     // MARK: - 根据阶段生成数值
-    private func generateValuesByPhase(params: RecognitionParams) -> (acc: Double, gyro: Double) {
-        let peakAcc = params.peakThreshold
-        let peakGyro = params.gyroThreshold
+    private func generateValuesByPhase(params: DetectionParams) -> (acc: Double, gyro: Double) {
+        let peakAcc = params.initialPeakThreshold
+        // 根据主轴类型确定陀螺仪峰值
+        let peakGyro: Double = {
+            switch params.primaryAxis {
+            case .gyroX, .gyroY, .gyroZ:
+                return params.initialPeakThreshold  // 陀螺仪主导时使用相同阈值
+            default:
+                return 30.0  // 默认陀螺仪阈值
+            }
+        }()
         
         switch actionPhase {
         case .rest:
@@ -127,7 +135,7 @@ class MockDataGenerator {
     }
     
     // MARK: - 创建加速度读数
-    private func createAccReading(primaryValue: Double, params: RecognitionParams, timestamp: TimeInterval) -> SensorReading {
+    private func createAccReading(primaryValue: Double, params: DetectionParams, timestamp: TimeInterval) -> SensorReading {
         var x = 0.0, y = 0.0, z = 0.0
         
         switch params.primaryAxis {
@@ -150,24 +158,10 @@ class MockDataGenerator {
     }
     
     // MARK: - 创建陀螺仪读数
-    private func createGyroReading(primaryValue: Double, params: RecognitionParams, timestamp: TimeInterval) -> SensorReading {
+    private func createGyroReading(primaryValue: Double, params: DetectionParams, timestamp: TimeInterval) -> SensorReading {
         var x = 0.0, y = 0.0, z = 0.0
         
-        // 根据辅助轴设置陀螺仪值
-        if let secondaryAxis = params.secondaryAxis {
-            switch secondaryAxis {
-            case .gyroX:
-                x = primaryValue
-            case .gyroY:
-                y = primaryValue
-            case .gyroZ:
-                z = primaryValue
-            default:
-                break
-            }
-        }
-        
-        // 如果主轴是陀螺仪
+        // 根据主轴设置陀螺仪值
         switch params.primaryAxis {
         case .gyroX:
             x = primaryValue
@@ -176,7 +170,8 @@ class MockDataGenerator {
         case .gyroZ:
             z = primaryValue
         default:
-            break
+            // 非陀螺仪主导时，添加小的辅助值
+            y = primaryValue * 0.3
         }
         
         return SensorReading(x: x, y: y, z: z, timestamp: timestamp)
@@ -196,7 +191,7 @@ class MockDataGenerator {
     private func updatePhase() {
         phase += updateInterval
         
-        let params = actionCode.recognitionParams
+        let params = actionCode.detectionParams
         let actionDuration = (params.timeWindow.min + params.timeWindow.max) / 2
         
         // 各阶段时长比例
@@ -262,7 +257,7 @@ extension MockDataGenerator {
     /// 生成预设的测试数据序列（用于单元测试）
     static func generateTestSequence(for action: ActionCode, reps: Int = 3) -> [FusedSensorData] {
         var sequence: [FusedSensorData] = []
-        let params = action.recognitionParams
+        let params = action.detectionParams
         let actionDuration = (params.timeWindow.min + params.timeWindow.max) / 2
         
         var timestamp: TimeInterval = 0
@@ -281,8 +276,8 @@ extension MockDataGenerator {
             let risingFrames = Int(actionDuration * 0.35 / dt)
             for i in 0..<risingFrames {
                 let progress = Double(i) / Double(risingFrames)
-                let value = params.peakThreshold * 1.2 * progress
-                let gyroValue = params.gyroThreshold * 1.1 * progress
+                let value = params.initialPeakThreshold * 1.2 * progress
+                let gyroValue = 30.0 * 1.1 * progress  // 默认陀螺仪值
                 let data = createActionData(
                     accValue: value,
                     gyroValue: gyroValue,
@@ -297,8 +292,8 @@ extension MockDataGenerator {
             let peakFrames = Int(actionDuration * 0.15 / dt)
             for _ in 0..<peakFrames {
                 let data = createActionData(
-                    accValue: params.peakThreshold * 1.15,
-                    gyroValue: params.gyroThreshold * 1.1,
+                    accValue: params.initialPeakThreshold * 1.15,
+                    gyroValue: 30.0 * 1.1,
                     params: params,
                     timestamp: timestamp
                 )
@@ -310,8 +305,8 @@ extension MockDataGenerator {
             let fallingFrames = Int(actionDuration * 0.35 / dt)
             for i in 0..<fallingFrames {
                 let progress = 1.0 - Double(i) / Double(fallingFrames)
-                let value = params.peakThreshold * 0.8 * progress
-                let gyroValue = params.gyroThreshold * 0.7 * progress
+                let value = params.initialPeakThreshold * 0.8 * progress
+                let gyroValue = 30.0 * 0.7 * progress
                 let data = createActionData(
                     accValue: value,
                     gyroValue: gyroValue,
@@ -343,13 +338,13 @@ extension MockDataGenerator {
     private static func createActionData(
         accValue: Double,
         gyroValue: Double,
-        params: RecognitionParams,
+        params: DetectionParams,
         timestamp: TimeInterval
     ) -> FusedSensorData {
         var accX = 0.0, accY = 0.0, accZ = 0.0
         var gyroX = 0.0, gyroY = 0.0, gyroZ = 0.0
         
-        // 设置主轴加速度
+        // 设置主轴
         switch params.primaryAxis {
         case .x: accX = accValue
         case .y: accY = accValue
@@ -357,19 +352,19 @@ extension MockDataGenerator {
         case .xyCombined:
             accX = accValue * 0.7
             accY = accValue * 0.7
+        case .magnitude:
+            let v = accValue / sqrt(3.0)
+            accX = v
+            accY = v
+            accZ = v
         case .gyroX: gyroX = accValue
         case .gyroY: gyroY = accValue
         case .gyroZ: gyroZ = accValue
         }
         
-        // 设置辅助轴陀螺仪
-        if let secondary = params.secondaryAxis {
-            switch secondary {
-            case .gyroX: gyroX = gyroValue
-            case .gyroY: gyroY = gyroValue
-            case .gyroZ: gyroZ = gyroValue
-            default: break
-            }
+        // 添加辅助陀螺仪值
+        if params.primaryAxis != .gyroX && params.primaryAxis != .gyroY && params.primaryAxis != .gyroZ {
+            gyroY = gyroValue
         }
         
         let acc = SensorReading(x: accX, y: accY, z: accZ, timestamp: timestamp)

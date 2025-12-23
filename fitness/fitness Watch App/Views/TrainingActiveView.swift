@@ -20,6 +20,7 @@ struct TrainingActiveView: View {
     @State private var isTraining: Bool = true
     @State private var navigateToComplete = false
     @State private var countColor: Color = .blue
+    @State private var showInvalidDataAlert = false
     
     @Environment(\.dismiss) private var dismiss
     
@@ -65,6 +66,13 @@ struct TrainingActiveView: View {
                 currentSet: currentSet,
                 session: session
             )
+        }
+        .alert("训练已取消", isPresented: $showInvalidDataAlert) {
+            Button("确定") {
+                dismissToHome()
+            }
+        } message: {
+            Text("未检测到有效动作数据")
         }
     }
     
@@ -205,7 +213,26 @@ struct TrainingActiveView: View {
         motionManager.stopMonitoring()
         session.actualReps = currentCount
         session.completeSet()
+        
+        if currentCount > 0 {
+            // 有有效数据，跳转到结果页面
+            navigateToComplete = true
+        } else {
+            // 无有效数据，提示用户并返回主页
+            showInvalidDataAlert = true
+        }
+    }
+    
+    // MARK: - 返回主页
+    private func dismissToHome() {
+        // 通过多次 dismiss 返回首页
         dismiss()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            dismiss()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                dismiss()
+            }
+        }
     }
     
     // MARK: - 达到目标
