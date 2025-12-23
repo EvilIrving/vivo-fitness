@@ -17,8 +17,13 @@ class MotionManager: ObservableObject {
     
     @Published var isMonitoring = false
     @Published var latestFusedData: FusedSensorData?
+    @Published var isSimulationMode = false
     
     var onDataUpdate: ((FusedSensorData) -> Void)?
+    
+    // 模拟数据生成器
+    private var mockGenerator: MockDataGenerator?
+    private var currentActionCode: ActionCode = .benchPress
     
     private let updateInterval: TimeInterval = 0.02  // 50 Hz
     
@@ -43,9 +48,60 @@ class MotionManager: ObservableObject {
                 self.processDeviceMotion(motion)
             }
             isMonitoring = true
+            isSimulationMode = false
         } else {
             // 降级：分别获取加速度和陀螺仪
             startSeparateSensors()
+        }
+    }
+    
+    // MARK: - 启动模拟模式（用于模拟器测试）
+    func startSimulation(action: ActionCode, continuous: Bool = true) {
+        guard !isMonitoring else { return }
+        
+        accBuffer.removeAll()
+        gyroBuffer.removeAll()
+        currentActionCode = action
+        
+        mockGenerator = MockDataGenerator()
+        mockGenerator?.onDataGenerated = { [weak self] fusedData in
+            guard let self = self else { return }
+            self.processSimulatedData(fusedData)
+        }
+        
+        mockGenerator?.startSimulation(
+            action: action,
+            mode: continuous ? .continuous : .action
+        )
+        
+        isMonitoring = true
+        isSimulationMode = true
+        
+        #if DEBUG
+        print("[MotionManager] 模拟模式启动 - 动作: \(action.name)")
+        #endif
+    }
+    
+    // MARK: - 处理模拟数据
+    private func processSimulatedData(_ fusedData: FusedSensorData) {
+        // 添加到缓冲区
+        addToBuffer(acc: fusedData.rawAcc, gyro: fusedData.rawGyro)
+        
+        // 应用滤波
+        let filteredAcc = applyMovingAverageFilter(buffer: accBuffer, windowSize: AppConfig.windowSize)
+        let filteredGyro = applyMovingAverageFilter(buffer: gyroBuffer, windowSize: AppConfig.windowSize)
+        
+        let processedData = FusedSensorData(
+            rawAcc: fusedData.rawAcc,
+            rawGyro: fusedData.rawGyro,
+            filteredAcc: filteredAcc,
+            filteredGyro: filteredGyro,
+            timestamp: fusedData.timestamp
+        )
+        
+        DispatchQueue.main.async {
+            self.latestFusedData = processedData
+            self.onDataUpdate?(processedData)
         }
     }
     
@@ -54,7 +110,25 @@ class MotionManager: ObservableObject {
         motionManager.stopDeviceMotionUpdates()
         motionManager.stopAccelerometerUpdates()
         motionManager.stopGyroUpdates()
+        
+        // 停止模拟
+        mockGenerator?.stopSimulation()
+        mockGenerator = nil
+        
         isMonitoring = false
+        isSimulationMode = false
+    }
+    
+    // MARK: - 自动选择模式启动
+    func startAutoMode(action: ActionCode) {
+        #if targetEnvironment(simulator)
+        // 模拟器环境自动使用模拟模式
+        startSimulation(action: action, continuous: true)
+        #else
+        // 真机使用真实传感器
+        currentActionCode = action
+        startMonitoring()
+        #endif
     }
     
     // MARK: - 处理设备运动数据

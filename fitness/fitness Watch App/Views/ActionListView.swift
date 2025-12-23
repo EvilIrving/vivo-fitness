@@ -10,6 +10,7 @@ import SwiftUI
 struct ActionListView: View {
     @State private var selectedAction: Action?
     @State private var showHistory = false
+    @State private var showTestMode = false
     
     private let actions = Action.allActions
     
@@ -30,6 +31,11 @@ struct ActionListView: View {
                     
                     // 历史入口
                     historyButton
+                    
+                    // 测试模式入口（仅在模拟器显示）
+                    #if targetEnvironment(simulator)
+                    testModeButton
+                    #endif
                 }
                 .padding(.horizontal, 4)
             }
@@ -38,6 +44,9 @@ struct ActionListView: View {
             }
             .navigationDestination(isPresented: $showHistory) {
                 TrainingHistoryView()
+            }
+            .navigationDestination(isPresented: $showTestMode) {
+                TestModeView()
             }
         }
     }
@@ -69,6 +78,24 @@ struct ActionListView: View {
                     .font(.footnote)
             }
             .foregroundColor(.gray)
+            .padding(.vertical, 12)
+        }
+        .buttonStyle(.plain)
+    }
+    
+    // MARK: - 测试模式按钮
+    private var testModeButton: some View {
+        Button {
+            HapticManager.shared.vibrate(for: .buttonTap)
+            showTestMode = true
+        } label: {
+            HStack(spacing: 6) {
+                Image(systemName: "waveform.path.ecg")
+                    .font(.body)
+                Text("模拟测试")
+                    .font(.footnote)
+            }
+            .foregroundColor(.orange)
             .padding(.vertical, 12)
         }
         .buttonStyle(.plain)
