@@ -44,9 +44,6 @@ struct TrainingActiveView: View {
             // 计数显示
             counterView
             
-            // 进度圆点
-            progressDotsView
-            
             Spacer()
             
             // 控制按钮
@@ -86,44 +83,25 @@ struct TrainingActiveView: View {
     
     // MARK: - 计数显示
     private var counterView: some View {
-        VStack(spacing: 2) {
+        HStack(spacing: 4) {
             Text("\(currentCount)")
-                .font(.system(size: 60, weight: .bold, design: .rounded))
+                .font(.system(size: 50, weight: .bold, design: .rounded))
                 .foregroundColor(countColor)
                 .contentTransition(.numericText())
                 .animation(.spring(duration: 0.3), value: currentCount)
             
-            Text("━━━")
-                .font(.caption)
-                .foregroundColor(.gray.opacity(0.5))
+            Text("/")
+                .font(.system(size: 30, weight: .semibold))
+                .foregroundColor(.secondary)
             
             Text("\(targetReps)")
-                .font(.title2)
+                .font(.system(size: 30, weight: .semibold, design: .rounded))
                 .foregroundColor(.secondary)
+                .baselineOffset(-8)
         }
     }
     
-    // MARK: - 进度圆点
-    private var progressDotsView: some View {
-        let maxDots = 10
-        let dotCount = min(targetReps, maxDots)
-        let filledDots: Int
-        
-        if targetReps <= maxDots {
-            filledDots = currentCount
-        } else {
-            filledDots = Int(Double(currentCount) / Double(targetReps) * Double(maxDots))
-        }
-        
-        return HStack(spacing: 4) {
-            ForEach(0..<dotCount, id: \.self) { index in
-                Circle()
-                    .fill(index < filledDots ? countColor : Color.gray.opacity(0.3))
-                    .frame(width: 8, height: 8)
-            }
-        }
-        .padding(.top, 8)
-    }
+
     
     // MARK: - 控制按钮
     private var controlsView: some View {
