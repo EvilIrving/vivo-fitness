@@ -23,7 +23,7 @@ class MotionManager: ObservableObject {
     
     // 模拟数据生成器
     private var mockGenerator: MockDataGenerator?
-    private var currentActionCode: ActionCode = .benchPress
+    private var currentActionCode: ActionCode = .barbellBenchPress
     
     private let updateInterval: TimeInterval = 0.02  // 50 Hz
     

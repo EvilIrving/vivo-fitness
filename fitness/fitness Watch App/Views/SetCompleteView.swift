@@ -191,11 +191,11 @@ struct SetCompleteView: View {
 #Preview {
     NavigationStack {
         SetCompleteView(
-            action: Action(code: .benchPress),
+            action: Action(code: .barbellBenchPress),
             targetReps: 12,
             actualReps: 12,
             currentSet: 1,
-            session: TrainingSession(action: Action(code: .benchPress))
+            session: TrainingSession(action: Action(code: .barbellBenchPress))
         )
     }
 }

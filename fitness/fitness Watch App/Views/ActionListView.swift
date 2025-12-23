@@ -12,7 +12,7 @@ struct ActionListView: View {
     @State private var showHistory = false
     @State private var showTestMode = false
     
-    private let actions = Action.allActions
+    private let groupedActions = Action.groupedActions
     
     var body: some View {
         NavigationStack {
@@ -21,12 +21,16 @@ struct ActionListView: View {
                     // 标题区
                     headerView
                     
-                    // 动作列表
-                    ForEach(actions) { action in
-                        NavigationLink(value: action) {
-                            ActionRowView(action: action)
+                    // 分组动作列表
+                    ForEach(groupedActions, id: \.category) { group in
+                        SectionHeaderView(title: group.category.rawValue)
+                        
+                        ForEach(group.actions) { action in
+                            NavigationLink(value: action) {
+                                ActionRowView(action: action)
+                            }
+                            .buttonStyle(.plain)
                         }
-                        .buttonStyle(.plain)
                     }
                     
                     // 历史入口
@@ -102,21 +106,34 @@ struct ActionListView: View {
     }
 }
 
+// MARK: - 分组标题视图
+struct SectionHeaderView: View {
+    let title: String
+    
+    var body: some View {
+        HStack {
+            Text(title)
+                .font(.caption)
+                .fontWeight(.semibold)
+                .foregroundColor(.secondary)
+            Spacer()
+        }
+        .padding(.horizontal, 8)
+        .padding(.top, 12)
+        .padding(.bottom, 4)
+    }
+}
+
 // MARK: - 动作行视图
 struct ActionRowView: View {
     let action: Action
     
     var body: some View {
         HStack {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(action.name)
-                    .font(.body)
-                    .fontWeight(.semibold)
-                    .foregroundColor(.primary)
-                Text(action.category)
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
-            }
+            Text(action.name)
+                .font(.body)
+                .fontWeight(.semibold)
+                .foregroundColor(.primary)
             
             Spacer()
             

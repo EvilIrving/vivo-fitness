@@ -18,7 +18,7 @@ class MockDataGenerator {
     }
     
     private var mode: SimulationMode = .idle
-    private var actionCode: ActionCode = .benchPress
+    private var actionCode: ActionCode = .barbellBenchPress
     private var timer: Timer?
     private var phase: Double = 0
     private var actionPhase: ActionPhase = .rest

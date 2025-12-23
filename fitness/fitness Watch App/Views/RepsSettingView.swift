@@ -109,6 +109,6 @@ struct RepsSettingView: View {
 
 #Preview {
     NavigationStack {
-        RepsSettingView(action: Action(code: .benchPress))
+        RepsSettingView(action: Action(code: .barbellBenchPress))
     }
 }

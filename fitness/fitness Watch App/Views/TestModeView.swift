@@ -11,7 +11,7 @@ struct TestModeView: View {
     @StateObject private var motionManager = MotionManager()
     @StateObject private var recognizer: ActionRecognizer
     
-    @State private var selectedAction: ActionCode = .benchPress
+    @State private var selectedAction: ActionCode = .barbellBenchPress
     @State private var isRunning = false
     @State private var recognizedCount = 0
     @State private var lastPeakValue: Double = 0
@@ -21,7 +21,7 @@ struct TestModeView: View {
     @State private var currentGyroValue: Double = 0
     
     init() {
-        _recognizer = StateObject(wrappedValue: ActionRecognizer(actionCode: .benchPress))
+        _recognizer = StateObject(wrappedValue: ActionRecognizer(actionCode: .barbellBenchPress))
     }
     
     var body: some View {

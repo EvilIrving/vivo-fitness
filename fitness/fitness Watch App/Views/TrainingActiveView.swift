@@ -252,6 +252,6 @@ struct TrainingActiveView: View {
 
 #Preview {
     NavigationStack {
-        TrainingActiveView(action: Action(code: .benchPress), targetReps: 12, currentSet: 1)
+        TrainingActiveView(action: Action(code: .barbellBenchPress), targetReps: 12, currentSet: 1)
     }
 }

@@ -72,6 +72,6 @@ struct TrainingReadyView: View {
 
 #Preview {
     NavigationStack {
-        TrainingReadyView(action: Action(code: .benchPress), targetReps: 12)
+        TrainingReadyView(action: Action(code: .barbellBenchPress), targetReps: 12)
     }
 }
