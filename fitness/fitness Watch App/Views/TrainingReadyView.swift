@@ -11,8 +11,8 @@ struct TrainingReadyView: View {
     let action: Action
     let targetReps: Int
     
-    @State private var countdown: Int = 0
-    @State private var isCountingDown = false
+    @State private var countdown: Int = AppConfig.countdownSeconds
+    @State private var isCountingDown = true
     @State private var navigateToTraining = false
     @State private var timer: Timer?
     
@@ -20,59 +20,17 @@ struct TrainingReadyView: View {
     
     var body: some View {
         VStack {
-            if countdown == 0 {
-                // 准备阶段
-                prepareView
-            } else {
-                // 倒计时阶段
-                countdownView
-            }
+            countdownView
         }
-        .navigationBarBackButtonHidden(isCountingDown)
+        .navigationBarBackButtonHidden(true)
         .navigationDestination(isPresented: $navigateToTraining) {
             TrainingActiveView(action: action, targetReps: targetReps, currentSet: 1)
         }
+        .onAppear {
+            startCountdown()
+        }
         .onDisappear {
             timer?.invalidate()
-        }
-    }
-    
-    // MARK: - 准备阶段视图
-    private var prepareView: some View {
-        VStack(spacing: 0) {
-            // 动作名称
-            Text(action.name)
-                .font(.headline)
-                .foregroundColor(.secondary)
-                .padding(.top, 16)
-            
-            Spacer()
-            
-            // 目标次数
-            VStack(spacing: 4) {
-                Text("\(targetReps)")
-                    .font(.system(size: 52, weight: .bold, design: .rounded))
-                    .foregroundColor(.blue)
-                Text("次")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-            
-            Spacer()
-            
-            // 开始按钮
-            Button {
-                startCountdown()
-            } label: {
-                Image(systemName: "play.fill")
-                    .font(.title)
-                    .foregroundColor(.white)
-                    .frame(width: 60, height: 60)
-                    .background(Color.blue)
-                    .clipShape(Circle())
-            }
-            .buttonStyle(.plain)
-            .padding(.bottom, 16)
         }
     }
     
@@ -93,9 +51,7 @@ struct TrainingReadyView: View {
     
     // MARK: - 开始倒计时
     private func startCountdown() {
-        HapticManager.shared.vibrate(for: .buttonTap)
-        countdown = AppConfig.countdownSeconds
-        isCountingDown = true
+        HapticManager.shared.vibrate(for: .countdownTick)
         
         timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
             if countdown > 1 {
