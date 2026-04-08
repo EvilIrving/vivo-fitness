@@ -1,4 +1,4 @@
-# swift-fitness 项目说明 
+# swift-fitness 项目说明
 
 本仓库为 **Apple Watch 健身计数** 应用。以下约束与协作约定供各类 AI 助手与 IDE Agent 引用。`AGENTS.md` 与 `CLAUDE.md` 正文应保持一致，任一处更新时请同步另一处。
 
